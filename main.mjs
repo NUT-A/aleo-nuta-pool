@@ -80,11 +80,8 @@ async function main() {
                 currentAleoAddress = newAleoAddress;
             }
 
-            // Sleep for 30 minutes
-            // const sleepTime = 30 * 60 * 1000;
-
-            // Sleep for 1 minute
-            const sleepTime = 60 * 1000;
+            // Sleep for 15 minutes
+            const sleepTime = 15 * 60 * 1000;
             await sleep(sleepTime);
         }
     } catch (e) {
