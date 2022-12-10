@@ -19,10 +19,26 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Get executable local path based on OS(Linux or Windows)
+function getDamoMinerExecutablePath() {
+    const os = require('os');
+    const platform = os.platform();
+
+    if (platform === 'linux') {
+        return './damominer';
+    } else if (platform === 'win32') {
+        return './damominer.exe';
+    } else {
+        throw new Error(`Unsupported OS: ${platform}`);
+    }
+}
+
+
 function startDamoMiner(targetAleoAddress) {
     console.log('Starting damominer...');
 
-    const damoMiner = spawn('damominer', [
+    const damoMinerExecutablePath = getDamoMinerExecutablePath();
+    const damoMiner = spawn(damoMinerExecutablePath, [
         '--address', targetAleoAddress,
         '--proxy', 'aleo1.damominer.hk:9090',
     ]);
@@ -64,8 +80,8 @@ async function main() {
                 currentAleoAddress = newAleoAddress;
             }
 
-            // Sleep for 1 hour
-            // const sleepTime = 60 * 60 * 1000;
+            // Sleep for 30 minutes
+            // const sleepTime = 30 * 60 * 1000;
 
             // Sleep for 1 minute
             const sleepTime = 60 * 1000;
