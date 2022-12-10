@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import os from 'os'; 'node-fetch';
 
 async function fetchTargetAleoAddress() {
     console.log('Fetching target Aleo address...');
@@ -21,7 +22,6 @@ function sleep(ms) {
 
 // Get executable local path based on OS(Linux or Windows)
 function getDamoMinerExecutablePath() {
-    const os = require('os');
     const platform = os.platform();
 
     if (platform === 'linux') {
