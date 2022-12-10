@@ -10,7 +10,10 @@ async function fetchTargetAleoAddress() {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const address = await response.text();
+    const rawAddress = await response.text();
+
+    // Trim the address
+    const address = rawAddress.trim();
 
     console.log(`Target Aleo address: ${address}`);
     return address;
