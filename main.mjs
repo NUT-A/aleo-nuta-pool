@@ -42,6 +42,9 @@ function extractHashRateFromLog(text) {
         return undefined;
     }
 
+    // Trim the text
+    text = text.trim();
+
     // Get lines
     const lines = text.split('\n');
     const lastLine = lines[lines.length - 2].toLowerCase();;
