@@ -36,6 +36,44 @@ function getDamoMinerExecutablePath() {
     }
 }
 
+function extractHashRateFromLog(text) {
+    // Check if text is string
+    if (typeof text !== 'string') {
+        return undefined;
+    }
+
+    // Get lines
+    const lines = text.split('\n');
+    const lastLine = lines[lines.length - 2].toLowerCase();;
+
+    // Match regex
+    const regex = /.*total:\s*(\d*)/;
+    const match = regex.exec(lastLine);
+
+    if (!match) {
+        return undefined
+    }
+
+    const hashRate = match[1];
+
+    const parsedHashRate = parseInt(hashRate);
+
+    if (isNaN(parsedHashRate)) {
+        return undefined;
+    }
+
+    return parsedHashRate;
+}
+
+async function reportHashrate(text) {
+    const hashRate = extractHashRateFromLog(text);
+
+    if (hashRate === undefined) {
+        return;
+    }
+
+    console.log(`Reporting hashrate: ${hashRate}`);
+}
 
 function startDamoMiner(targetAleoAddress) {
     console.log('Starting damominer...');
@@ -46,8 +84,11 @@ function startDamoMiner(targetAleoAddress) {
         '--proxy', 'aleo1.damominer.hk:9090',
     ]);
 
-    damoMiner.stdout.on('data', (data) => {
+    damoMiner.stdout.on('data', async (data) => {
         console.log(`stdout: ${data}`);
+
+        // Report hashrate
+        await reportHashrate(data.toString());
     });
 
     damoMiner.stderr.on('data', (data) => {
