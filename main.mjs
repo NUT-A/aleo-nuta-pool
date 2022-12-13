@@ -74,12 +74,14 @@ function createInfluxLineProtocol(measurement, fields, tags) {
     const fieldsString = Object.entries(fields)
         .map(([key, value]) => `${key}=${value}`)
         .join(',');
-        
+
     return `${measurement},${tagsString} ${fieldsString}`;
 }
 
 // Report hashrate to influxdb
 async function reportHashrateToInlux(hashRate, workerName, address) {
+    console.log(`Reporting hashrate: ${hashRate}. Worker: ${workerName}. Address: ${address}`);
+
     const lineProtocol = createInfluxLineProtocol('hashrate', { value: hashRate }, { worker: workerName, address: address });
 
     const response = await fetch('https://eu-central-1-1.aws.cloud2.influxdata.com/api/v2/write?org=bac006f07f1d191e&bucket=hashrate', {
