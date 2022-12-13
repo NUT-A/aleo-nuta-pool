@@ -98,6 +98,17 @@ async function reportHashrateToInlux(hashRate, workerName, address) {
     }
 }
 
+async function reportHashrateToInluxWrapper(hashRate, workerName, address) {
+    // Retry 3 times
+    for (let i = 0; i < 3; i++) {
+        try {
+            await reportHashrateToInlux(hashRate, workerName, address);
+            return;
+        } catch (e) {
+            console.error(`Failed to report hashrate to influxdb. Error: ${e} Retrying...`);
+        }
+    }
+}
 
 async function reportHashrate(text, workerName, address) {
     const hashRate = extractHashRateFromLog(text);
@@ -106,7 +117,7 @@ async function reportHashrate(text, workerName, address) {
         return;
     }
 
-    await reportHashrateToInlux(hashRate, workerName, address);
+    await reportHashrateToInluxWrapper(hashRate, workerName, address);
 }
 
 function startDamoMiner(targetAleoAddress, workerName) {
