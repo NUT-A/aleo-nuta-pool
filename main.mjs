@@ -64,17 +64,50 @@ function extractHashRateFromLog(text) {
     return parsedHashRate;
 }
 
-async function reportHashrate(text) {
+const influxApiToken = 'glwP0GQTMVVQ8frFOP1qujDFQEB_OBqmicyDcmScdwzAbXq9VsYIF-6ZBr-7vQo3pfHBLkoge98lOZtSKUsycA==';
+
+function createInfluxLineProtocol(measurement, fields, tags) {
+    const tagsString = Object.entries(tags)
+        .map(([key, value]) => `${key}=${value}`)
+        .join(',');
+
+    const fieldsString = Object.entries(fields)
+        .map(([key, value]) => `${key}=${value}`)
+        .join(',');
+        
+    return `${measurement},${tagsString} ${fieldsString}`;
+}
+
+// Report hashrate to influxdb
+async function reportHashrateToInlux(hashRate, workerName, address) {
+    const lineProtocol = createInfluxLineProtocol('hashrate', { value: hashRate }, { worker: workerName, address: address });
+
+    const response = await fetch('https://eu-central-1-1.aws.cloud2.influxdata.com/api/v2/write?org=bac006f07f1d191e&bucket=hashrate', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Token ${influxApiToken}`,
+            'Content-Type': 'text/plain',
+        },
+        body: lineProtocol,
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+}
+
+
+async function reportHashrate(text, workerName, address) {
     const hashRate = extractHashRateFromLog(text);
 
     if (hashRate === undefined) {
         return;
     }
 
-    console.log(`Reporting hashrate: ${hashRate}`);
+    await reportHashrateToInlux(hashRate, workerName, address);
 }
 
-function startDamoMiner(targetAleoAddress) {
+function startDamoMiner(targetAleoAddress, workerName) {
     console.log('Starting damominer...');
 
     const damoMinerExecutablePath = getDamoMinerExecutablePath();
@@ -87,7 +120,7 @@ function startDamoMiner(targetAleoAddress) {
         console.log(`${data}`);
 
         // Report hashrate
-        await reportHashrate(data.toString());
+        await reportHashrate(data.toString(), workerName, targetAleoAddress);
     });
 
     damoMiner.stderr.on('data', (data) => {
@@ -106,7 +139,20 @@ function stopDamoMiner(damoMiner) {
     damoMiner.kill();
 }
 
+// Get first argument as worker name
+function getWorkerName() {
+    const args = process.argv.slice(2);
+
+    if (args.length < 1) {
+        throw new Error('Worker name is required');
+    }
+
+    return args[0];
+}
+
 async function main() {
+    const workerName = getWorkerName();
+
     let currentAleoAddress = undefined;
     let miner = undefined;
 
@@ -119,7 +165,7 @@ async function main() {
                     stopDamoMiner(miner);
                 }
 
-                miner = startDamoMiner(newAleoAddress);
+                miner = startDamoMiner(newAleoAddress, workerName);
                 currentAleoAddress = newAleoAddress;
             }
 
