@@ -43,15 +43,11 @@ function extractHashRateFromLog(text) {
     }
 
     // Trim the text
-    text = text.trim();
-
-    // Get lines
-    const lines = text.split('\n');
-    const lastLine = lines[lines.length - 2].toLowerCase();;
+    text = text.trim().toLowerCase();
 
     // Match regex
     const regex = /.*total:\s*(\d*)/;
-    const match = regex.exec(lastLine);
+    const match = regex.exec(text);
 
     if (!match) {
         return undefined
@@ -88,7 +84,7 @@ function startDamoMiner(targetAleoAddress) {
     ]);
 
     damoMiner.stdout.on('data', async (data) => {
-        console.log(`stdout: ${data}`);
+        console.log(`${data}`);
 
         // Report hashrate
         await reportHashrate(data.toString());
