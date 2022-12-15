@@ -127,6 +127,7 @@ function startDamoMiner(targetAleoAddress, workerName) {
     const damoMiner = spawn(damoMinerExecutablePath, [
         '--address', targetAleoAddress,
         '--proxy', 'aleo1.damominer.hk:9090',
+        '--worker', workerName,
     ]);
 
     damoMiner.stdout.on('data', async (data) => {
